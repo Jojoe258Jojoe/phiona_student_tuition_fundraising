@@ -3,6 +3,16 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Validate environment variables
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables')
+  throw new Error('Supabase configuration is incomplete. Please check your .env file.')
+}
+
+// Log configuration for debugging (without exposing the full key)
+console.log('Supabase URL:', supabaseUrl)
+console.log('Supabase Key configured:', supabaseKey ? 'Yes' : 'No')
+
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Auth functions
@@ -176,6 +186,17 @@ export const competitionService = {
   // Get all competitions
   async getCompetitions() {
     try {
+      // Test connection first
+      const { data: testData, error: testError } = await supabase
+        .from('competitions')
+        .select('count')
+        .limit(1)
+      
+      if (testError) {
+        console.error('Supabase connection test failed:', testError)
+        throw new Error(`Database connection failed: ${testError.message}`)
+      }
+      
       const { data, error } = await supabase
         .from('competitions')
         .select('*')
@@ -184,6 +205,7 @@ export const competitionService = {
       if (error) throw error
       return { success: true, data }
     } catch (error) {
+      console.error('getCompetitions error:', error)
       return { success: false, error: error.message }
     }
   },
