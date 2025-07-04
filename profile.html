@@ -2,92 +2,723 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>User Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - Phiona</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
+    :root {
+      --electric-green: #00ff41;
+      --dark-bg: #0a0a0a;
+      --medium-dark: #1a1a1a;
+      --light-dark: #2a2a2a;
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --gradient-primary: linear-gradient(135deg, var(--electric-green), #00cc33);
+      --gradient-dark: linear-gradient(135deg, var(--dark-bg), var(--medium-dark));
+      --gradient-electric: linear-gradient(135deg, var(--electric-green), #00ff80, #00cc33);
+      --shadow-glow: 0 0 20px rgba(0, 255, 65, 0.3);
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --error-color: #ff4444;
+      --success-color: #00ff41;
+      --warning-color: #ffaa00;
+    }
+
+    * {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #000000, #006400);
-      color: white;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gradient-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .profile-header h1 {
+      background: var(--gradient-electric);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
     }
 
     .profile-container {
-      max-width: 500px;
-      background: linear-gradient(145deg, #001100, #004d00);
-      margin: 60px auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 25px #00ff00;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 65, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-electric);
+    }
+
+    .profile-content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .profile-left {
       text-align: center;
     }
 
+    .profile-pic-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+    }
+
     .profile-pic {
-      width: 120px;
-      height: 120px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid #00ff00;
-      box-shadow: 0 0 15px #00ff00;
-      margin-bottom: 20px;
+      border: 3px solid var(--electric-green);
+      box-shadow: var(--shadow-glow);
+      transition: all 0.3s ease;
     }
 
-    h2 {
-      color: #adff2f;
-      margin-bottom: 10px;
-    }
-
-    .bio {
-      font-style: italic;
-      color: #bfff00;
-      margin-bottom: 25px;
-    }
-
-    .info {
-      text-align: left;
-      margin-top: 20px;
-    }
-
-    .info p {
-      margin: 10px 0;
-      padding-left: 10px;
-      border-left: 3px solid #00ff00;
-    }
-
-    button {
-      margin-top: 25px;
-      padding: 10px 20px;
-      background: linear-gradient(to right, #00ff00, #003300);
-      color: black;
-      font-weight: bold;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #00ff00;
-      transition: transform 0.2s ease-in-out;
-    }
-
-    button:hover {
+    .profile-pic:hover {
       transform: scale(1.05);
-      background: linear-gradient(to right, #66ff66, #002200);
+    }
+
+    .edit-pic-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gradient-electric);
+      border: none;
+      color: var(--dark-bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .edit-pic-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+    }
+
+    .profile-right {
+      padding-left: 1rem;
+    }
+
+    .profile-field {
+      margin-bottom: 1.5rem;
+    }
+
+    .field-label {
+      display: block;
+      color: var(--electric-green);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-value {
+      color: var(--text-primary);
+      font-size: 1rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-value.editable {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .field-value.editable:hover {
+      border-color: var(--electric-green);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .bio-field .field-value {
+      min-height: 100px;
+      align-items: flex-start;
+      padding-top: 0.75rem;
+    }
+
+    .edit-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--electric-green);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.75rem;
+      transition: all 0.3s ease;
+      resize: vertical;
+    }
+
+    .edit-input:focus {
+      outline: none;
+      border-color: var(--electric-green);
+      box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.2);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .edit-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--gradient-electric);
+      color: var(--dark-bg);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      border-color: var(--text-primary);
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .back-link a {
+      color: var(--electric-green);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+      color: #00ff80;
+      text-decoration: underline;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--electric-green);
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      animation: messageSlideIn 0.3s ease-out;
+      max-width: 300px;
+    }
+
+    .message.success {
+      background: var(--success-color);
+      color: var(--dark-bg);
+    }
+
+    .message.error {
+      background: var(--error-color);
+    }
+
+    .message.info {
+      background: var(--warning-color);
+      color: var(--dark-bg);
+    }
+
+    @keyframes messageSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .empty-state {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+
+      .profile-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        text-align: center;
+      }
+
+      .profile-right {
+        padding-left: 0;
+      }
+
+      .profile-header h1 {
+        font-size: 2rem;
+      }
+
+      .profile-pic {
+        width: 120px;
+        height: 120px;
+      }
+
+      .profile-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .edit-actions {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .profile-container {
+        padding: 1.5rem;
+      }
+
+      .profile-pic {
+        width: 100px;
+        height: 100px;
+      }
+
+      .edit-pic-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
 <body>
-
-  <div class="profile-container">
-    <img class="profile-pic" src="https://via.placeholder.com/120" alt="Profile Picture" />
-    <h2>Jane Doe</h2>
-    <p class="bio">Passionate web developer & hackathon enthusiast 🌟</p>
-
-    <div class="info">
-      <p><strong>Email:</strong> jane.doe@example.com</p>
-      <p><strong>Institution:</strong> Greenlight University</p>
-      <p><strong>Skills:</strong> JavaScript, Python, UI/UX Design</p>
-      <p><strong>Hobbies:</strong> Coding challenges, design sprints, gaming</p>
+  <div class="container">
+    <div class="profile-header">
+      <h1>My Profile</h1>
+      <p>Manage your profile information and settings</p>
     </div>
 
-    <button>Edit Profile</button>
+    <div class="profile-container">
+      <div class="profile-content">
+        <div class="profile-left">
+          <div class="profile-pic-container">
+            <img class="profile-pic" id="profilePicture" src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1" alt="Profile Picture" />
+            <button class="edit-pic-btn" id="editPicBtn" title="Change profile picture">📷</button>
+            <input type="file" id="profilePicInput" class="file-input" accept="image/*">
+          </div>
+        </div>
+
+        <div class="profile-right">
+          <div class="profile-field">
+            <label class="field-label">Full Name</label>
+            <div class="field-value" id="fullNameValue">Loading...</div>
+          </div>
+
+          <div class="profile-field">
+            <label class="field-label">Email</label>
+            <div class="field-value" id="emailValue">Loading...</div>
+          </div>
+
+          <div class="profile-field">
+            <label class="field-label">Username</label>
+            <div class="field-value" id="usernameValue">Loading...</div>
+          </div>
+
+          <div class="profile-field bio-field">
+            <label class="field-label">Bio</label>
+            <div class="field-value editable" id="bioValue" onclick="editBio()">
+              <span class="empty-state">Click to add a bio...</span>
+            </div>
+          </div>
+
+          <div class="profile-field">
+            <label class="field-label">Location</label>
+            <div class="field-value" id="locationValue">Not specified</div>
+          </div>
+
+          <div class="profile-field">
+            <label class="field-label">Member Since</label>
+            <div class="field-value" id="memberSinceValue">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn btn-primary" onclick="saveProfile()" id="saveBtn" style="display: none;">
+          💾 Save Changes
+        </button>
+        <button class="btn btn-secondary" onclick="cancelEdit()" id="cancelBtn" style="display: none;">
+          ❌ Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
   </div>
 
+  <script type="module">
+    import { authManager } from './src/auth.js'
+    import { userService } from './src/database.js'
+
+    class ProfileManager {
+      constructor() {
+        this.currentProfile = null
+        this.isEditing = false
+        this.originalBio = ''
+        this.originalAvatarUrl = ''
+        this.pendingChanges = {}
+        this.init()
+      }
+
+      async init() {
+        // Check if user is authenticated
+        await authManager.init()
+        
+        if (!authManager.isAuthenticated) {
+          this.showMessage('Please log in to view your profile', 'error')
+          setTimeout(() => {
+            window.location.href = 'index.html'
+          }, 2000)
+          return
+        }
+
+        // Load user profile
+        await this.loadProfile()
+        this.setupEventListeners()
+      }
+
+      async loadProfile() {
+        try {
+          const result = await userService.getProfile(authManager.currentUser.id)
+          
+          if (result.success && result.data) {
+            this.currentProfile = result.data
+            this.displayProfile()
+          } else {
+            // Create profile if it doesn't exist
+            await this.createInitialProfile()
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error)
+          this.showMessage('Error loading profile', 'error')
+        }
+      }
+
+      async createInitialProfile() {
+        try {
+          const profileData = {
+            username: authManager.currentUser.email.split('@')[0],
+            full_name: authManager.currentUser.user_metadata?.full_name || 'User',
+            bio: null,
+            avatar_url: null,
+            location: null
+          }
+
+          const result = await userService.createProfile(authManager.currentUser.id, profileData)
+          
+          if (result.success) {
+            this.currentProfile = result.data[0]
+            this.displayProfile()
+          } else {
+            this.showMessage('Error creating profile', 'error')
+          }
+        } catch (error) {
+          console.error('Error creating profile:', error)
+          this.showMessage('Error creating profile', 'error')
+        }
+      }
+
+      displayProfile() {
+        if (!this.currentProfile) return
+
+        // Display profile data
+        document.getElementById('fullNameValue').textContent = this.currentProfile.full_name || 'Not specified'
+        document.getElementById('emailValue').textContent = authManager.currentUser.email
+        document.getElementById('usernameValue').textContent = this.currentProfile.username || 'Not set'
+        document.getElementById('locationValue').textContent = this.currentProfile.location || 'Not specified'
+        
+        // Display bio
+        const bioElement = document.getElementById('bioValue')
+        if (this.currentProfile.bio) {
+          bioElement.innerHTML = this.currentProfile.bio
+          bioElement.classList.remove('empty-state')
+        } else {
+          bioElement.innerHTML = '<span class="empty-state">Click to add a bio...</span>'
+        }
+
+        // Display profile picture
+        if (this.currentProfile.avatar_url) {
+          document.getElementById('profilePicture').src = this.currentProfile.avatar_url
+        }
+
+        // Display member since date
+        const memberSince = new Date(this.currentProfile.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+        document.getElementById('memberSinceValue').textContent = memberSince
+      }
+
+      setupEventListeners() {
+        // Profile picture change
+        document.getElementById('editPicBtn').addEventListener('click', () => {
+          document.getElementById('profilePicInput').click()
+        })
+
+        document.getElementById('profilePicInput').addEventListener('change', (e) => {
+          this.handleProfilePictureChange(e)
+        })
+      }
+
+      editBio() {
+        if (this.isEditing) return
+
+        this.isEditing = true
+        this.originalBio = this.currentProfile.bio || ''
+
+        const bioElement = document.getElementById('bioValue')
+        bioElement.innerHTML = `
+          <textarea class="edit-input" id="bioInput" placeholder="Tell us about yourself..." rows="4">${this.originalBio}</textarea>
+          <div class="edit-actions">
+            <button class="btn btn-primary btn-small" onclick="profileManager.saveBio()">💾 Save</button>
+            <button class="btn btn-secondary btn-small" onclick="profileManager.cancelBioEdit()">❌ Cancel</button>
+          </div>
+        `
+
+        bioElement.classList.remove('editable')
+        document.getElementById('bioInput').focus()
+      }
+
+      async saveBio() {
+        const bioInput = document.getElementById('bioInput')
+        const newBio = bioInput.value.trim()
+
+        if (newBio.length > 500) {
+          this.showMessage('Bio must be less than 500 characters', 'error')
+          return
+        }
+
+        try {
+          const result = await userService.updateProfile(authManager.currentUser.id, {
+            bio: newBio || null
+          })
+
+          if (result.success) {
+            this.currentProfile.bio = newBio || null
+            this.isEditing = false
+            this.displayProfile()
+            this.showMessage('Bio updated successfully!', 'success')
+          } else {
+            this.showMessage('Error updating bio', 'error')
+          }
+        } catch (error) {
+          console.error('Error saving bio:', error)
+          this.showMessage('Error updating bio', 'error')
+        }
+      }
+
+      cancelBioEdit() {
+        this.isEditing = false
+        this.displayProfile()
+      }
+
+      async handleProfilePictureChange(event) {
+        const file = event.target.files[0]
+        if (!file) return
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          this.showMessage('Please select a valid image file', 'error')
+          return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.showMessage('Image must be less than 5MB', 'error')
+          return
+        }
+
+        try {
+          // For demo purposes, we'll use a placeholder URL
+          // In a real app, you'd upload to Supabase Storage
+          const reader = new FileReader()
+          reader.onload = async (e) => {
+            const imageUrl = e.target.result
+            
+            // Update profile picture immediately for preview
+            document.getElementById('profilePicture').src = imageUrl
+            
+            // In a real implementation, you would upload to Supabase Storage:
+            // const result = await supabase.storage.from('avatars').upload(`${userId}/${file.name}`, file)
+            // const avatarUrl = result.data.publicUrl
+            
+            // For now, we'll save a placeholder URL
+            const result = await userService.updateProfile(authManager.currentUser.id, {
+              avatar_url: imageUrl
+            })
+
+            if (result.success) {
+              this.currentProfile.avatar_url = imageUrl
+              this.showMessage('Profile picture updated successfully!', 'success')
+            } else {
+              this.showMessage('Error updating profile picture', 'error')
+              // Revert the image
+              this.displayProfile()
+            }
+          }
+          
+          reader.readAsDataURL(file)
+        } catch (error) {
+          console.error('Error updating profile picture:', error)
+          this.showMessage('Error updating profile picture', 'error')
+        }
+      }
+
+      showMessage(message, type) {
+        const messageDiv = document.createElement('div')
+        messageDiv.className = `message ${type}`
+        messageDiv.textContent = message
+        
+        document.body.appendChild(messageDiv)
+        
+        setTimeout(() => {
+          messageDiv.remove()
+        }, 5000)
+      }
+    }
+
+    // Initialize profile manager
+    const profileManager = new ProfileManager()
+    
+    // Make functions available globally
+    window.profileManager = profileManager
+    window.editBio = () => profileManager.editBio()
+    window.saveProfile = () => profileManager.saveProfile()
+    window.cancelEdit = () => profileManager.cancelEdit()
+  </script>
 </body>
 </html>

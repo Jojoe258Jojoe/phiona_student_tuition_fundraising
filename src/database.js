@@ -119,12 +119,52 @@ export const userService = {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', userId)
         .select()
       
       if (error) throw error
       return { success: true, data }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  },
+
+  // Upload avatar image
+  async uploadAvatar(userId, file) {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${userId}-${Math.random()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      return { success: true, url: publicUrl }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  },
+
+  // Delete old avatar
+  async deleteAvatar(filePath) {
+    try {
+      const { error } = await supabase.storage
+        .from('avatars')
+        .remove([filePath])
+
+      if (error) throw error
+      return { success: true }
     } catch (error) {
       return { success: false, error: error.message }
     }
