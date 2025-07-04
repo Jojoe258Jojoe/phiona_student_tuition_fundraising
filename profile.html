@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #000000, #006400);
+      color: white;
+    }
+
+    .profile-container {
+      max-width: 500px;
+      background: linear-gradient(145deg, #001100, #004d00);
+      margin: 60px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 25px #00ff00;
+      text-align: center;
+    }
+
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #00ff00;
+      box-shadow: 0 0 15px #00ff00;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #adff2f;
+      margin-bottom: 10px;
+    }
+
+    .bio {
+      font-style: italic;
+      color: #bfff00;
+      margin-bottom: 25px;
+    }
+
+    .info {
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    .info p {
+      margin: 10px 0;
+      padding-left: 10px;
+      border-left: 3px solid #00ff00;
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 10px 20px;
+      background: linear-gradient(to right, #00ff00, #003300);
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00ff00;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(to right, #66ff66, #002200);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="profile-container">
+    <img class="profile-pic" src="https://via.placeholder.com/120" alt="Profile Picture" />
+    <h2>Jane Doe</h2>
+    <p class="bio">Passionate web developer & hackathon enthusiast 🌟</p>
+
+    <div class="info">
+      <p><strong>Email:</strong> jane.doe@example.com</p>
+      <p><strong>Institution:</strong> Greenlight University</p>
+      <p><strong>Skills:</strong> JavaScript, Python, UI/UX Design</p>
+      <p><strong>Hobbies:</strong> Coding challenges, design sprints, gaming</p>
+    </div>
+
+    <button>Edit Profile</button>
+  </div>
+
+</body>
+</html>
