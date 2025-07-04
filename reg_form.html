@@ -2,89 +2,356 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Competition Registration form</title>
+  <title>Competition Registration Form</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       padding: 20px;
-      background: linear-gradient(to right, #003300, #00ff00);
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
       color: white;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      background: linear-gradient(135deg, #00ff41, #00ff80, #00cc33);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      color: #b0b0b0;
+      font-size: 1.1rem;
     }
 
     form {
-      background: #002200;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 0 20px #00ff00;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 65, 0.3);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, #00ff41, #00ff80, #00cc33);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
     }
 
     label {
       display: block;
-      margin-top: 15px;
+      margin-bottom: 0.5rem;
+      color: #00ff41;
+      font-weight: 500;
+      font-size: 0.9rem;
     }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #00ff41;
+      box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.2);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #888;
+    }
+
+    select option {
+      background: #1a1a1a;
+      color: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    button {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #00ff41, #00cc33);
+      border: none;
+      border-radius: 8px;
+      color: #0a0a0a;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
     #successMessage {
       display: none;
       text-align: center;
-      margin-top: 20px;
-      padding: 12px;
-      background-color: #004d00;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: rgba(0, 255, 65, 0.1);
+      border: 1px solid #00ff41;
       border-radius: 8px;
-      box-shadow: 0 0 10px #00ff00;
-      font-weight: bold;
+      color: #00ff41;
+      font-weight: 500;
+      animation: slideIn 0.3s ease-out;
     }
-    button {
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background: linear-gradient(to right, #00ff00, #006400);
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .loading {
+      position: relative;
+      pointer-events: none;
+    }
+
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #00ff41;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .registration-messages {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 400px;
+    }
+
+    .registration-message {
+      margin-bottom: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .registration-message.show {
+      transform: translateX(0);
+    }
+
+    .registration-message.success {
+      background: rgba(0, 255, 65, 0.9);
+      color: #0a0a0a;
+    }
+
+    .registration-message.error {
+      background: rgba(255, 68, 68, 0.9);
+      color: white;
+    }
+
+    .registration-message.info {
+      background: rgba(255, 170, 0, 0.9);
+      color: #0a0a0a;
+    }
+
+    .message-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+
+    .message-close {
+      background: none;
       border: none;
-      color: black;
-      font-weight: bold;
+      color: inherit;
+      font-size: 1.2rem;
       cursor: pointer;
+      padding: 0;
+      width: auto;
+      margin-left: 1rem;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .back-link a {
+      color: #00ff41;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+      color: #00ff80;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+
+      form {
+        padding: 1.5rem;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .registration-messages {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+      }
     }
   </style>
 </head>
 <body>
-  <form id="hackathonForm">
-    <h2>Student Hackathon Registration</h2>
+  <div class="container">
+    <div class="header">
+      <h1>Student Hackathon Registration</h1>
+      <p>Join the next generation of innovators and compete for amazing prizes!</p>
+    </div>
 
-    <label for="fullName">Full Name</label>
-    <input type="text" id="fullName" name="fullName" required>
+    <form id="hackathonForm">
+      <div class="form-group">
+        <label for="fullName">Full Name *</label>
+        <input type="text" id="fullName" name="fullName" required>
+      </div>
 
-    <label for="email">Email Address</label>
-    <input type="email" id="email" name="email" required>
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input type="email" id="email" name="email" required>
+      </div>
 
-    <label for="university">University / Institution</label>
-    <input type="text" id="university" name="university" required>
+      <div class="form-group">
+        <label for="university">University / Institution *</label>
+        <input type="text" id="university" name="university" required>
+      </div>
 
-    <label for="skillset">Technical Skills (e.g. Python, Web Dev, UI/UX)</label>
-    <input type="text" id="skillset" name="skillset" required>
+      <div class="form-group">
+        <label for="skillset">Technical Skills *</label>
+        <input type="text" id="skillset" name="skillset" placeholder="e.g., Python, Web Dev, UI/UX, Machine Learning" required>
+      </div>
 
-    <label for="experience">Competition Experience</label>
-    <select id="experience" name="experience">
-      <option value="first-time">First-time participant</option>
-      <option value="some">Participated Before</option>
-      <option value="many">Competition Veteran</option>
-    </select>
+      <div class="form-group">
+        <label for="experience">Competition Experience *</label>
+        <select id="experience" name="experience" required>
+          <option value="">Select your experience level</option>
+          <option value="first-time">First-time participant</option>
+          <option value="some">Participated before</option>
+          <option value="many">Competition veteran</option>
+        </select>
+      </div>
 
-    <label for="projectInterest">What kind of project are you interested in?</label>
-    <textarea id="projectInterest" name="projectInterest" rows="4" placeholder="Tell us what excites you..."></textarea>
+      <div class="form-group">
+        <label for="projectInterest">What kind of project interests you?</label>
+        <textarea id="projectInterest" name="projectInterest" placeholder="Tell us what excites you about this hackathon..."></textarea>
+      </div>
 
-    <button type="submit">Register Now</button>
-  </form>
-  <div id="successMessage">🎉 You have successfully registered!</div>
-  </body>
+      <button type="submit">Register Now</button>
+    </form>
 
-    <script>
-    const form = document.getElementById('registrationForm');
-    const successMessage = document.getElementById('successMessage');
+    <div id="successMessage">
+      🎉 Registration successful! You'll receive a confirmation email shortly.
+    </div>
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault(); // Prevent real submission
-      successMessage.style.display = 'block';
-      form.reset(); // Optionally clear the form
-    });
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+
+  <!-- Registration messages container -->
+  <div id="registrationMessages" class="registration-messages"></div>
+
+  <!-- Import the registration manager -->
+  <script type="module">
+    import { hackathonRegistrationManager } from './src/hackathon-registration.js'
+    
+    // Set the hackathon name for this specific form
+    hackathonRegistrationManager.setHackathonName('Student Hackathon 2024')
+    
+    // Make it available globally
+    window.hackathonRegistrationManager = hackathonRegistrationManager
   </script>
+</body>
 </html>

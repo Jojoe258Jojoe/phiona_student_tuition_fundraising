@@ -2,6 +2,7 @@ import './style.css'
 import { authManager } from './src/auth.js'
 import { createAuthModal, createUserProfile } from './src/components.js'
 import { competitionService } from './src/database.js'
+import { hackathonRegistrationManager } from './src/hackathon-registration.js'
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -63,6 +64,7 @@ window.showForgotPassword = () => {
 }
 
 window.authManager = authManager
+window.hackathonRegistrationManager = hackathonRegistrationManager
 
 async function loadCompetitions() {
   const result = await competitionService.getCompetitions()
