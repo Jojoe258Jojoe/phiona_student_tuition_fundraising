@@ -147,7 +147,15 @@ class AuthManager {
         console.log('Login successful for user:', result.data.user.id)
         return true
       } else {
-        const errorMessage = result.error || 'Login failed'
+        let errorMessage = result.error || 'Login failed'
+        
+        // Provide more user-friendly error messages
+        if (result.error === 'Invalid login credentials') {
+          errorMessage = 'Invalid email or password. Please check your credentials.'
+        } else if (result.error === 'Email not confirmed') {
+          errorMessage = 'Your email address has not been confirmed. Please check your inbox for a verification link.'
+        }
+        
         console.error('Login failed:', errorMessage)
         this.showMessage(errorMessage, 'error')
         return false
