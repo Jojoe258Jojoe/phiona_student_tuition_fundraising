@@ -21,7 +21,7 @@ class AuthManager {
     const { email, password, fullName, school, skills } = formData
     
     // First create the auth user without email verification
-    const authResult = await authService.signUpDirect(email, password)
+    const authResult = await authService.signUp(email, password, { fullName, school, skills })
     
     if (!authResult.success) {
       this.showMessage(authResult.error, 'error')
