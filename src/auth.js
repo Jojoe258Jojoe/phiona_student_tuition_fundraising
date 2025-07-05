@@ -1,4 +1,4 @@
-import { authService, userService } from './database.js'
+import { authService, userService, supabase } from './database.js'
 
 class AuthManager {
   constructor() {
