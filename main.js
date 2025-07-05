@@ -192,7 +192,6 @@ function setupEventListeners() {
     // Reset button state
     submitButton.textContent = originalText
     submitButton.disabled = false
-    }
   })
 
   // Forgot password form
