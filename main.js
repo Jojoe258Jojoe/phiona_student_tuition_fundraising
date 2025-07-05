@@ -157,10 +157,28 @@ function setupEventListeners() {
   // Login form
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault()
-    const email = document.getElementById('loginEmail').value
+    
+    const submitButton = e.target.querySelector('button[type="submit"]')
+    const btnText = submitButton.querySelector('.btn-text')
+    const btnLoading = submitButton.querySelector('.btn-loading')
+    
+    // Show loading state
+    btnText.style.display = 'none'
+    btnLoading.style.display = 'flex'
+    submitButton.disabled = true
+    
+    const email = document.getElementById('loginEmail').value.trim()
     const password = document.getElementById('loginPassword').value
     
-    await authManager.login(email, password)
+    const success = await authManager.login(email, password)
+    if (success) {
+      await loadCompetitions()
+    }
+    
+    // Reset button state
+    btnText.style.display = 'inline'
+    btnLoading.style.display = 'none'
+    submitButton.disabled = false
   })
 
   // Register form
@@ -171,15 +189,20 @@ function setupEventListeners() {
     const originalText = submitButton.textContent
     
     // Show loading state
-    submitButton.textContent = 'Creating Account...'
+    const btnText = submitButton.querySelector('.btn-text')
+    const btnLoading = submitButton.querySelector('.btn-loading')
+    btnText.style.display = 'none'
+    btnLoading.style.display = 'flex'
     submitButton.disabled = true
     
     const formData = {
-      email: document.getElementById('registerEmail').value,
+      name: document.getElementById('registerName').value.trim(),
+      email: document.getElementById('registerEmail').value.trim(),
       password: document.getElementById('registerPassword').value,
-      fullName: document.getElementById('registerFullName').value,
-      school: document.getElementById('registerSchool').value,
-      skills: document.getElementById('registerSkills').value
+      passwordConfirmation: document.getElementById('registerPasswordConfirm').value,
+      schoolUniversity: document.getElementById('registerSchoolUniversity').value.trim(),
+      skills: document.getElementById('registerSkills').value.trim(),
+      agreeTerms: document.getElementById('agreeTerms').checked
     }
     
     const success = await authManager.register(formData)
@@ -190,19 +213,35 @@ function setupEventListeners() {
     }
     
     // Reset button state
-    submitButton.textContent = originalText
+    btnText.style.display = 'inline'
+    btnLoading.style.display = 'none'
     submitButton.disabled = false
   })
 
   // Forgot password form
   document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
     e.preventDefault()
-    const email = document.getElementById('resetEmail').value
+    
+    const submitButton = e.target.querySelector('button[type="submit"]')
+    const btnText = submitButton.querySelector('.btn-text')
+    const btnLoading = submitButton.querySelector('.btn-loading')
+    
+    // Show loading state
+    btnText.style.display = 'none'
+    btnLoading.style.display = 'flex'
+    submitButton.disabled = true
+    
+    const email = document.getElementById('resetEmail').value.trim()
     
     const success = await authManager.resetPassword(email)
     if (success) {
       showTab('login')
     }
+    
+    // Reset button state
+    btnText.style.display = 'inline'
+    btnLoading.style.display = 'none'
+    submitButton.disabled = false
   })
 
   // Filter buttons
@@ -269,10 +308,103 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   })
 })
 
+// Global functions for form interactions
+window.togglePassword = (inputId) => {
+  const input = document.getElementById(inputId)
+  const toggle = input.nextElementSibling.querySelector('.toggle-icon')
+  
+  if (input.type === 'password') {
+    input.type = 'text'
+    toggle.textContent = '🙈'
+  } else {
+    input.type = 'password'
+    toggle.textContent = '👁️'
+  }
+}
+
+// Real-time validation for registration form
+document.addEventListener('DOMContentLoaded', () => {
+  // Password strength checker
+  const passwordInput = document.getElementById('registerPassword')
+  const passwordStrengthDiv = document.getElementById('passwordStrength')
+  
+  if (passwordInput && passwordStrengthDiv) {
+    passwordInput.addEventListener('input', (e) => {
+      const password = e.target.value
+      if (password.length > 0) {
+        const strength = authManager.checkPasswordStrength(password)
+        passwordStrengthDiv.innerHTML = `
+          <div class="strength-meter">
+            <div class="strength-bar strength-${strength.score}"></div>
+          </div>
+          <span class="strength-text">Password strength: ${strength.level}</span>
+        `
+        passwordStrengthDiv.style.display = 'block'
+      } else {
+        passwordStrengthDiv.style.display = 'none'
+      }
+    })
+  }
+  
+  // Password confirmation checker
+  const passwordConfirmInput = document.getElementById('registerPasswordConfirm')
+  const passwordMatchDiv = document.getElementById('passwordMatch')
+  
+  if (passwordConfirmInput && passwordMatchDiv) {
+    passwordConfirmInput.addEventListener('input', (e) => {
+      const password = document.getElementById('registerPassword').value
+      const confirmPassword = e.target.value
+      
+      if (confirmPassword.length > 0) {
+        if (password === confirmPassword) {
+          passwordMatchDiv.innerHTML = '<span class="match-success">✓ Passwords match</span>'
+          passwordMatchDiv.className = 'password-match success'
+        } else {
+          passwordMatchDiv.innerHTML = '<span class="match-error">✗ Passwords do not match</span>'
+          passwordMatchDiv.className = 'password-match error'
+        }
+        passwordMatchDiv.style.display = 'block'
+      } else {
+        passwordMatchDiv.style.display = 'none'
+      }
+    })
+  }
+  
+  // Real-time email validation
+  const emailInputs = document.querySelectorAll('input[type="email"]')
+  emailInputs.forEach(input => {
+    input.addEventListener('blur', (e) => {
+      const email = e.target.value.trim()
+      if (email && !authManager.validationRules.email.pattern.test(email)) {
+        e.target.classList.add('error')
+      } else {
+        e.target.classList.remove('error')
+      }
+    })
+  })
+  
+  // Clear errors on input focus
+  document.querySelectorAll('.form-input').forEach(input => {
+    input.addEventListener('focus', (e) => {
+      e.target.classList.remove('error')
+      const errorId = e.target.id + 'Error'
+      const errorElement = document.getElementById(errorId)
+      if (errorElement) {
+        errorElement.style.display = 'none'
+      }
+    })
+  authManager.clearFormErrors()
+  })
+})
+
 // Add parallax effect to particles
 window.addEventListener('scroll', () => {
+  authManager.clearFormErrors()
   const scrolled = window.pageYOffset
   const particles = document.querySelectorAll('.particle')
+  
+  // Clear form errors when switching tabs
+  authManager.clearFormErrors()
   
   particles.forEach((particle, index) => {
     const speed = 0.5 + (index * 0.1)
