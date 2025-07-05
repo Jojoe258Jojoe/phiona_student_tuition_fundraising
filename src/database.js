@@ -45,7 +45,8 @@ export const authService = {
         email: trimmedEmail,
         password,
         options: {
-          emailRedirectTo: undefined, // Disable email confirmation for now
+          emailRedirectTo: undefined, // Disable email confirmation
+          shouldCreateUser: true,
           data: userData
         }
       })
@@ -81,10 +82,42 @@ export const authService = {
   // Sign in
   async signIn(email, password) {
     try {
+      // First attempt normal sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
+      
+      // If email not confirmed error, try to confirm the user automatically
+      if (error && error.message.includes('Email not confirmed')) {
+        console.log('Email not confirmed, attempting to auto-confirm user...')
+        
+        // Try to sign up again with the same credentials to auto-confirm
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: undefined,
+            shouldCreateUser: false // Don't create a new user, just confirm existing
+          }
+        })
+        
+        if (signUpError && !signUpError.message.includes('already registered')) {
+          throw new Error('Unable to confirm account automatically. Please contact support.')
+        }
+        
+        // Now try to sign in again
+        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+        
+        if (retryError) {
+          throw new Error('Login failed after confirmation attempt. Please try again.')
+        }
+        
+        return { success: true, data: retryData }
+      }
       
       if (error) throw error
       return { success: true, data }
@@ -188,6 +221,7 @@ export const userService = {
         password,
         options: {
           emailRedirectTo: undefined, // Disable email confirmation
+          shouldCreateUser: true,
           data: {
             name: name.trim(),
             full_name: name.trim(),
@@ -200,6 +234,34 @@ export const userService = {
       
       if (authError) {
         console.error('Auth user creation failed:', authError)
+        
+        // If user already exists but email not confirmed, try to handle it
+        if (authError.message.includes('already registered')) {
+          console.log('User already exists, attempting to sign in...')
+          
+          // Try to sign in the existing user
+          const signInResult = await authService.signIn(email.trim().toLowerCase(), password)
+          
+          if (signInResult.success) {
+            console.log('Successfully signed in existing user')
+            
+            // Update registration status to completed
+            await supabase
+              .from('user_registrations')
+              .update({ 
+                registration_status: 'completed',
+                processed_at: new Date().toISOString()
+              })
+              .eq('id', regData.id)
+            
+            return { 
+              success: true, 
+              data: signInResult.data,
+              message: 'Registration successful! You are now logged in.'
+            }
+          }
+        }
+        
         // Update registration status to failed
         await supabase
           .from('user_registrations')

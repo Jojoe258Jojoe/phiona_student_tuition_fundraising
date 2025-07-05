@@ -152,8 +152,10 @@ class AuthManager {
         // Provide more user-friendly error messages
         if (result.error === 'Invalid login credentials') {
           errorMessage = 'Invalid email or password. Please check your credentials.'
-        } else if (result.error === 'Email not confirmed') {
-          errorMessage = 'Your email address has not been confirmed. Please check your inbox for a verification link.'
+        } else if (result.error.includes('Email not confirmed')) {
+          errorMessage = 'Account confirmation in progress. Please try logging in again.'
+        } else if (result.error.includes('confirmation')) {
+          errorMessage = 'Account setup in progress. Please try again in a moment.'
         }
         
         console.error('Login failed:', errorMessage)
