@@ -318,6 +318,17 @@ body {
   text-decoration: underline;
 }
 
+.registration-note {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+}
+
+.registration-note small {
+  font-size: 0.8rem;
+  color: var(--electric-green);
+}
+
 /* Messages */
 .message {
   position: fixed;

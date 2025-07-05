@@ -20,19 +20,35 @@ class AuthManager {
   async register(formData) {
     const { email, password, fullName, school, skills } = formData
     
-    const userData = {
-      full_name: fullName,
-      school: school,
-      skills: skills
+    // First create the auth user without email verification
+    const authResult = await authService.signUpDirect(email, password)
+    
+    if (!authResult.success) {
+      this.showMessage(authResult.error, 'error')
+      return false
     }
 
-    const result = await authService.signUp(email, password, userData)
+    // Create profile data
+    const profileData = {
+      username: email.split('@')[0],
+      full_name: fullName,
+      bio: null,
+      avatar_url: null,
+      location: school || null
+    }
+
+    // Create the user profile
+    const profileResult = await userService.createProfile(authResult.data.user.id, profileData)
     
-    if (result.success) {
-      this.showMessage('Registration successful! Please check your email to verify your account.', 'success')
+    if (profileResult.success) {
+      // Auto-login the user
+      this.currentUser = authResult.data.user
+      this.isAuthenticated = true
+      this.updateUI()
+      this.showMessage('Registration successful! Welcome to Phiona!', 'success')
       return true
     } else {
-      this.showMessage(result.error, 'error')
+      this.showMessage('Registration failed. Please try again.', 'error')
       return false
     }
   }
@@ -81,12 +97,17 @@ class AuthManager {
     const userProfile = document.querySelector('.user-profile')
     
     if (this.isAuthenticated) {
-      authButtons.style.display = 'none'
-      userProfile.style.display = 'flex'
-      userProfile.querySelector('.user-email').textContent = this.currentUser.email
+      if (authButtons) authButtons.style.display = 'none'
+      if (userProfile) {
+        userProfile.style.display = 'flex'
+        const emailElement = userProfile.querySelector('.user-email')
+        if (emailElement) {
+          emailElement.textContent = this.currentUser.email
+        }
+      }
     } else {
-      authButtons.style.display = 'flex'
-      userProfile.style.display = 'none'
+      if (authButtons) authButtons.style.display = 'flex'
+      if (userProfile) userProfile.style.display = 'none'
     }
   }
 

@@ -53,6 +53,9 @@ export function createAuthModal() {
               <input type="text" id="registerSkills" placeholder="e.g., JavaScript, Python, Design">
             </div>
             <button type="submit" class="btn btn-primary">Create Account</button>
+            <p class="registration-note">
+              <small>Your account will be created instantly - no email verification required!</small>
+            </p>
           </form>
         </div>
 

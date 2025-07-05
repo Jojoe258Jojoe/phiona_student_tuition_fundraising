@@ -166,6 +166,14 @@ function setupEventListeners() {
   // Register form
   document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault()
+    
+    const submitButton = e.target.querySelector('button[type="submit"]')
+    const originalText = submitButton.textContent
+    
+    // Show loading state
+    submitButton.textContent = 'Creating Account...'
+    submitButton.disabled = true
+    
     const formData = {
       email: document.getElementById('registerEmail').value,
       password: document.getElementById('registerPassword').value,
@@ -177,6 +185,13 @@ function setupEventListeners() {
     const success = await authManager.register(formData)
     if (success) {
       closeAuthModal()
+      // Reload competitions to show user-specific data
+      await loadCompetitions()
+    }
+    
+    // Reset button state
+    submitButton.textContent = originalText
+    submitButton.disabled = false
     }
   })
 
