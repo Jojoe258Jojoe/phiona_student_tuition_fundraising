@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Authentication - Phiona</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: white;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .debug-section {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 65, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .debug-section h2 {
+      color: #00ff41;
+      margin-bottom: 15px;
+    }
+    .debug-input {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: white;
+      margin-bottom: 10px;
+    }
+    .debug-button {
+      background: linear-gradient(135deg, #00ff41, #00cc33);
+      color: #0a0a0a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .debug-output {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success { color: #00ff41; }
+    .error { color: #ff4444; }
+    .warning { color: #ffaa00; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Authentication Debug Tool</h1>
+    
+    <div class="debug-section">
+      <h2>1. Check User Status</h2>
+      <input type="email" id="checkEmail" class="debug-input" placeholder="Enter email to check">
+      <button class="debug-button" onclick="checkUserStatus()">Check Status</button>
+      <div id="userStatusOutput" class="debug-output"></div>
+    </div>
+
+    <div class="debug-section">
+      <h2>2. Test Registration</h2>
+      <input type="text" id="testName" class="debug-input" placeholder="Full Name">
+      <input type="email" id="testEmail" class="debug-input" placeholder="Email">
+      <input type="password" id="testPassword" class="debug-input" placeholder="Password">
+      <input type="text" id="testSchool" class="debug-input" placeholder="School/University">
+      <input type="text" id="testSkills" class="debug-input" placeholder="Skills">
+      <button class="debug-button" onclick="testRegistration()">Test Registration</button>
+      <div id="registrationOutput" class="debug-output"></div>
+    </div>
+
+    <div class="debug-section">
+      <h2>3. Database Connection Test</h2>
+      <button class="debug-button" onclick="testConnection()">Test Connection</button>
+      <button class="debug-button" onclick="checkTables()">Check Tables</button>
+      <button class="debug-button" onclick="checkPolicies()">Check RLS Policies</button>
+      <div id="connectionOutput" class="debug-output"></div>
+    </div>
+
+    <div class="debug-section">
+      <h2>4. Create Missing Profiles</h2>
+      <button class="debug-button" onclick="createMissingProfiles()">Create Missing Profiles</button>
+      <div id="profilesOutput" class="debug-output"></div>
+    </div>
+
+    <div class="debug-section">
+      <h2>5. System Logs</h2>
+      <button class="debug-button" onclick="clearLogs()">Clear Logs</button>
+      <div id="systemLogs" class="debug-output"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './src/database.js'
+    import { userService } from './src/database.js'
+
+    let logs = [];
+
+    function addLog(message, type = 'info') {
+      const timestamp = new Date().toISOString();
+      logs.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+      updateLogsDisplay();
+    }
+
+    function updateLogsDisplay() {
+      document.getElementById('systemLogs').textContent = logs.join('\n');
+    }
+
+    window.checkUserStatus = async function() {
+      const email = document.getElementById('checkEmail').value;
+      const output = document.getElementById('userStatusOutput');
+      
+      if (!email) {
+        output.innerHTML = '<span class="error">Please enter an email address</span>';
+        return;
+      }
+
+      try {
+        addLog(`Checking status for user: ${email}`);
+        
+        // Check auth.users
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+        
+        if (authError) {
+          throw new Error(`Auth check failed: ${authError.message}`);
+        }
+
+        // Check profiles
+        let profileData = null;
+        if (authUser) {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', authUser.id)
+            .single();
+          
+          if (!profileError) {
+            profileData = profile;
+          }
+        }
+
+        const result = {
+          email: email,
+          authUserExists: !!authUser,
+          userId: authUser?.id || null,
+          emailConfirmed: authUser?.email_confirmed_at ? true : false,
+          profileExists: !!profileData,
+          profileData: profileData,
+          userMetadata: authUser?.user_metadata || null
+        };
+
+        output.innerHTML = `<span class="success">${JSON.stringify(result, null, 2)}</span>`;
+        addLog(`User status check completed for ${email}`, 'success');
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+        addLog(`User status check failed: ${error.message}`, 'error');
+      }
+    }
+
+    window.testRegistration = async function() {
+      const output = document.getElementById('registrationOutput');
+      const formData = {
+        name: document.getElementById('testName').value,
+        email: document.getElementById('testEmail').value,
+        password: document.getElementById('testPassword').value,
+        passwordConfirmation: document.getElementById('testPassword').value,
+        schoolUniversity: document.getElementById('testSchool').value,
+        skills: document.getElementById('testSkills').value
+      };
+
+      if (!formData.name || !formData.email || !formData.password || !formData.schoolUniversity || !formData.skills) {
+        output.innerHTML = '<span class="error">Please fill in all fields</span>';
+        return;
+      }
+
+      try {
+        addLog(`Testing registration for: ${formData.email}`);
+        output.innerHTML = '<span class="warning">Testing registration...</span>';
+        
+        const result = await userService.registerUser(formData);
+        
+        if (result.success) {
+          output.innerHTML = `<span class="success">Registration successful!\n${JSON.stringify(result, null, 2)}</span>`;
+          addLog(`Registration test successful for ${formData.email}`, 'success');
+        } else {
+          output.innerHTML = `<span class="error">Registration failed: ${result.error}</span>`;
+          addLog(`Registration test failed: ${result.error}`, 'error');
+        }
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">Registration error: ${error.message}</span>`;
+        addLog(`Registration test error: ${error.message}`, 'error');
+      }
+    }
+
+    window.testConnection = async function() {
+      const output = document.getElementById('connectionOutput');
+      
+      try {
+        addLog('Testing database connection...');
+        
+        // Test basic connection
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('count')
+          .limit(1);
+        
+        if (error) throw error;
+        
+        output.innerHTML = '<span class="success">Database connection successful!</span>';
+        addLog('Database connection test passed', 'success');
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">Connection failed: ${error.message}</span>`;
+        addLog(`Database connection test failed: ${error.message}`, 'error');
+      }
+    }
+
+    window.checkTables = async function() {
+      const output = document.getElementById('connectionOutput');
+      
+      try {
+        addLog('Checking database tables...');
+        
+        const tables = ['profiles', 'user_registrations', 'competitions'];
+        const results = {};
+        
+        for (const table of tables) {
+          try {
+            const { count, error } = await supabase
+              .from(table)
+              .select('*', { count: 'exact', head: true });
+            
+            if (error) throw error;
+            results[table] = { exists: true, count: count };
+          } catch (error) {
+            results[table] = { exists: false, error: error.message };
+          }
+        }
+        
+        output.innerHTML = `<span class="success">Table check results:\n${JSON.stringify(results, null, 2)}</span>`;
+        addLog('Table check completed', 'success');
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">Table check failed: ${error.message}</span>`;
+        addLog(`Table check failed: ${error.message}`, 'error');
+      }
+    }
+
+    window.checkPolicies = async function() {
+      const output = document.getElementById('connectionOutput');
+      
+      try {
+        addLog('Checking RLS policies...');
+        
+        // This would require admin access to check policies
+        // For now, we'll just test if we can perform basic operations
+        
+        const tests = {
+          'profiles_select': false,
+          'profiles_insert': false,
+          'user_registrations_insert': false
+        };
+        
+        // Test profiles select (should work for authenticated users)
+        try {
+          const { data, error } = await supabase.from('profiles').select('id').limit(1);
+          tests.profiles_select = !error;
+        } catch (e) {
+          tests.profiles_select = false;
+        }
+        
+        // Test user_registrations insert (should work for public)
+        try {
+          const { error } = await supabase.from('user_registrations').insert({
+            name: 'Test User',
+            email: 'test@example.com',
+            password_hash: 'test',
+            school_university: 'Test University',
+            skills: 'Testing'
+          });
+          tests.user_registrations_insert = !error || error.code !== '42501';
+        } catch (e) {
+          tests.user_registrations_insert = false;
+        }
+        
+        output.innerHTML = `<span class="success">Policy check results:\n${JSON.stringify(tests, null, 2)}</span>`;
+        addLog('Policy check completed', 'success');
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">Policy check failed: ${error.message}</span>`;
+        addLog(`Policy check failed: ${error.message}`, 'error');
+      }
+    }
+
+    window.createMissingProfiles = async function() {
+      const output = document.getElementById('profilesOutput');
+      
+      try {
+        addLog('Creating missing profiles...');
+        
+        const { data, error } = await supabase.rpc('create_missing_profiles');
+        
+        if (error) throw error;
+        
+        output.innerHTML = '<span class="success">Missing profiles created successfully!</span>';
+        addLog('Missing profiles created', 'success');
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">Failed to create profiles: ${error.message}</span>`;
+        addLog(`Failed to create missing profiles: ${error.message}`, 'error');
+      }
+    }
+
+    window.clearLogs = function() {
+      logs = [];
+      updateLogsDisplay();
+    }
+
+    // Initialize
+    addLog('Debug tool initialized');
+  </script>
+</body>
+</html>

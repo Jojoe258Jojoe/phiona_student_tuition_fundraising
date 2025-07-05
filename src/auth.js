@@ -56,15 +56,19 @@ class AuthManager {
       return false
     }
 
+    console.log('Registration form validation passed')
+    
     // Use the new registration system
     const result = await userService.registerUser(formData)
     
     if (result.success) {
+      console.log('Registration successful:', result.message)
       this.showMessage(result.message || 'Registration successful!', 'success')
       this.closeModal()
       this.clearFormErrors()
       return true
     } else {
+      console.error('Registration failed:', result.error)
       this.showMessage(result.error, 'error')
       return false
     }

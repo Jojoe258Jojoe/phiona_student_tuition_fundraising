@@ -104,6 +104,9 @@ export const userService = {
         return { success: false, error: 'All fields are required' }
       }
       
+      // Log registration attempt
+      console.log('Starting user registration for:', email)
+      
       // Insert into registration table first
       const { data: regData, error: regError } = await supabase
         .from('user_registrations')
@@ -120,20 +123,26 @@ export const userService = {
       
       if (regError) throw regError
       
+      console.log('Registration record created:', regData.id)
+      
       // Now create the auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
+          emailRedirectTo: undefined, // Disable email confirmation
           data: {
             name: name.trim(),
+            full_name: name.trim(),
             school_university: schoolUniversity.trim(),
+            school: schoolUniversity.trim(),
             skills: skills.trim()
           }
         }
       })
       
       if (authError) {
+        console.error('Auth user creation failed:', authError)
         // Update registration status to failed
         await supabase
           .from('user_registrations')
@@ -147,25 +156,44 @@ export const userService = {
         throw authError
       }
       
+      console.log('Auth user created:', authData.user?.id)
+      
       // Create profile after successful auth user creation
       if (authData.user) {
-        const profileData = {
-          id: authData.user.id,
-          username: email.split('@')[0],
-          full_name: name.trim(),
-          bio: null,
-          avatar_url: null,
-          location: schoolUniversity.trim()
-        }
+        // Wait a moment for the trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
-        const { error: profileError } = await supabase
+        // Check if profile was created by trigger
+        const { data: existingProfile } = await supabase
           .from('profiles')
-          .insert([profileData])
+          .select('id')
+          .eq('id', authData.user.id)
+          .single()
         
-        if (profileError) {
-          console.error('Profile creation error:', profileError)
-          // Don't fail the registration if profile creation fails
-          // The profile can be created later
+        if (!existingProfile) {
+          console.log('Profile not created by trigger, creating manually...')
+          const profileData = {
+            id: authData.user.id,
+            username: email.split('@')[0],
+            full_name: name.trim(),
+            bio: null,
+            avatar_url: null,
+            location: schoolUniversity.trim()
+          }
+          
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([profileData])
+          
+          if (profileError) {
+            console.error('Manual profile creation error:', profileError)
+            // Don't fail the registration if profile creation fails
+            // The profile can be created later
+          } else {
+            console.log('Profile created manually')
+          }
+        } else {
+          console.log('Profile created by trigger')
         }
         
         // Update registration status to completed
@@ -181,12 +209,22 @@ export const userService = {
       return { 
         success: true, 
         data: authData,
-        message: 'Registration successful! Please check your email to verify your account.'
+        message: 'Registration successful! You can now log in.'
       }
       
     } catch (error) {
       console.error('Registration error:', error)
-      return { success: false, error: error.message }
+      
+      // Provide more specific error messages
+      if (error.message.includes('duplicate key')) {
+        return { success: false, error: 'An account with this email already exists' }
+      } else if (error.message.includes('row-level security')) {
+        return { success: false, error: 'Database permission error. Please try again.' }
+      } else if (error.message.includes('invalid input')) {
+        return { success: false, error: 'Invalid input data. Please check your information.' }
+      } else {
+        return { success: false, error: `Registration failed: ${error.message}` }
+      }
     }
   },
 
