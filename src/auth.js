@@ -75,32 +75,56 @@ class AuthManager {
   }
 
   async login(email, password) {
-    // Validate login form
-    const errors = {}
-    if (!email || !this.validationRules.email.pattern.test(email)) {
-      errors.email = 'Please enter a valid email address'
-    }
-    if (!password || password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long'
-    }
+    try {
+      // Input validation - ensure values are valid strings
+      if (!email || typeof email !== 'string') {
+        this.showMessage('Email is required', 'error')
+        return false
+      }
+      
+      if (!password || typeof password !== 'string') {
+        this.showMessage('Password is required', 'error')
+        return false
+      }
+      
+      // Trim whitespace and validate
+      const trimmedEmail = email.trim()
+      const trimmedPassword = password.trim()
+      
+      if (!trimmedEmail || !this.validationRules.email.pattern.test(trimmedEmail)) {
+        this.displayLoginErrors({ email: 'Please enter a valid email address' })
+        return false
+      }
+      
+      if (!trimmedPassword || trimmedPassword.length < 6) {
+        this.displayLoginErrors({ password: 'Password must be at least 6 characters long' })
+        return false
+      }
 
-    if (Object.keys(errors).length > 0) {
-      this.displayLoginErrors(errors)
-      return false
-    }
+      console.log('Attempting login for:', trimmedEmail)
 
-    const result = await authService.signIn(email, password)
-    
-    if (result.success) {
-      this.currentUser = result.data.user
-      this.isAuthenticated = true
-      this.updateUI()
-      this.showMessage('Login successful!', 'success')
-      this.closeModal()
-      this.clearFormErrors()
-      return true
-    } else {
-      this.showMessage(result.error, 'error')
+      // Use proper signInWithPassword implementation
+      const result = await authService.signIn(trimmedEmail, trimmedPassword)
+      
+      if (result.success && result.data?.user) {
+        this.currentUser = result.data.user
+        this.isAuthenticated = true
+        this.updateUI()
+        this.showMessage('Login successful!', 'success')
+        this.closeModal()
+        this.clearFormErrors()
+        console.log('Login successful for user:', result.data.user.id)
+        return true
+      } else {
+        const errorMessage = result.error || 'Login failed'
+        console.error('Login failed:', errorMessage)
+        this.showMessage(errorMessage, 'error')
+        return false
+      }
+      
+    } catch (error) {
+      console.error('Unexpected error during login:', error)
+      this.showMessage('An unexpected error occurred. Please try again.', 'error')
       return false
     }
   }

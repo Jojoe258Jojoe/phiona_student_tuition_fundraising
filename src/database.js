@@ -20,19 +20,61 @@ export const authService = {
   // Sign up with email verification
   async signUp(email, password, userData) {
     try {
+      // Validate inputs
+      if (!email || typeof email !== 'string') {
+        throw new Error('Email must be a valid string')
+      }
+      
+      if (!password || typeof password !== 'string') {
+        throw new Error('Password must be a valid string')
+      }
+      
+      const trimmedEmail = email.trim()
+      
+      if (!trimmedEmail) {
+        throw new Error('Email cannot be empty')
+      }
+      
+      if (!password || password.length < 6) {
+        throw new Error('Password must be at least 6 characters long')
+      }
+      
+      console.log('Attempting signUp for:', trimmedEmail)
+      
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`,
+          emailRedirectTo: undefined, // Disable email confirmation for now
           data: userData
         }
       })
       
-      if (error) throw error
+      if (error) {
+        console.error('signUp error:', error)
+        
+        // Provide user-friendly error messages
+        let userMessage = error.message
+        if (error.message.includes('already registered')) {
+          userMessage = 'An account with this email already exists. Please try logging in instead.'
+        } else if (error.message.includes('Password should be')) {
+          userMessage = 'Password does not meet requirements. Please choose a stronger password.'
+        } else if (error.message.includes('Invalid email')) {
+          userMessage = 'Please enter a valid email address.'
+        }
+        
+        throw new Error(userMessage)
+      }
+      
+      console.log('SignUp successful for user:', data?.user?.id)
       return { success: true, data }
+      
     } catch (error) {
-      return { success: false, error: error.message }
+      console.error('Sign up error:', error)
+      return { 
+        success: false, 
+        error: error.message || 'Registration failed. Please try again.'
+      }
     }
   },
 
