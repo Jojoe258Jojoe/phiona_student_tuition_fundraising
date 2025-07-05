@@ -18,37 +18,15 @@ class AuthManager {
   }
 
   async register(formData) {
-    const { email, password, fullName, school, skills } = formData
+    // Use the new registration system
+    const result = await userService.registerUser(formData)
     
-    // First create the auth user without email verification
-    const authResult = await authService.signUp(email, password, { fullName, school, skills })
-    
-    if (!authResult.success) {
-      this.showMessage(authResult.error, 'error')
-      return false
-    }
-
-    // Create profile data
-    const profileData = {
-      username: email.split('@')[0],
-      full_name: fullName,
-      bio: null,
-      avatar_url: null,
-      location: school || null
-    }
-
-    // Create the user profile
-    const profileResult = await userService.createProfile(authResult.data.user.id, profileData)
-    
-    if (profileResult.success) {
-      // Auto-login the user
-      this.currentUser = authResult.data.user
-      this.isAuthenticated = true
-      this.updateUI()
-      this.showMessage('Registration successful! Welcome to Phiona!', 'success')
+    if (result.success) {
+      this.showMessage(result.message || 'Registration successful!', 'success')
+      this.closeModal()
       return true
     } else {
-      this.showMessage('Registration failed. Please try again.', 'error')
+      this.showMessage(result.error, 'error')
       return false
     }
   }

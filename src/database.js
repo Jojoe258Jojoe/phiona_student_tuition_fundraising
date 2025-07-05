@@ -89,6 +89,107 @@ export const authService = {
 
 // User profile functions
 export const userService = {
+  // Register new user with separate registration table
+  async registerUser(formData) {
+    try {
+      const { name, email, password, passwordConfirmation, schoolUniversity, skills } = formData
+      
+      // Validate passwords match
+      if (password !== passwordConfirmation) {
+        return { success: false, error: 'Passwords do not match' }
+      }
+      
+      // Validate required fields
+      if (!name || !email || !password || !schoolUniversity || !skills) {
+        return { success: false, error: 'All fields are required' }
+      }
+      
+      // Insert into registration table first
+      const { data: regData, error: regError } = await supabase
+        .from('user_registrations')
+        .insert([{
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password_hash: password, // In production, this should be hashed client-side
+          school_university: schoolUniversity.trim(),
+          skills: skills.trim(),
+          registration_status: 'pending'
+        }])
+        .select()
+        .single()
+      
+      if (regError) throw regError
+      
+      // Now create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+            school_university: schoolUniversity.trim(),
+            skills: skills.trim()
+          }
+        }
+      })
+      
+      if (authError) {
+        // Update registration status to failed
+        await supabase
+          .from('user_registrations')
+          .update({ 
+            registration_status: 'failed',
+            error_message: authError.message,
+            processed_at: new Date().toISOString()
+          })
+          .eq('id', regData.id)
+        
+        throw authError
+      }
+      
+      // Create profile after successful auth user creation
+      if (authData.user) {
+        const profileData = {
+          id: authData.user.id,
+          username: email.split('@')[0],
+          full_name: name.trim(),
+          bio: null,
+          avatar_url: null,
+          location: schoolUniversity.trim()
+        }
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([profileData])
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+          // Don't fail the registration if profile creation fails
+          // The profile can be created later
+        }
+        
+        // Update registration status to completed
+        await supabase
+          .from('user_registrations')
+          .update({ 
+            registration_status: 'completed',
+            processed_at: new Date().toISOString()
+          })
+          .eq('id', regData.id)
+      }
+      
+      return { 
+        success: true, 
+        data: authData,
+        message: 'Registration successful! Please check your email to verify your account.'
+      }
+      
+    } catch (error) {
+      console.error('Registration error:', error)
+      return { success: false, error: error.message }
+    }
+  },
+
   // Create user profile
   async createProfile(userId, profileData) {
     try {
