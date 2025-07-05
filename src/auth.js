@@ -39,11 +39,42 @@ class AuthManager {
   }
 
   async init() {
-    // Check if user is already logged in
-    const { success, user } = await authService.getCurrentUser()
-    if (success && user) {
-      this.currentUser = user
-      this.isAuthenticated = true
+    try {
+      // Check if user is already logged in
+      console.log('Initializing auth manager...')
+      
+      const { success, user } = await authService.getCurrentUser()
+      if (success && user) {
+        console.log('Found existing user session:', user.id)
+        this.currentUser = user
+        this.isAuthenticated = true
+        this.updateUI()
+      } else {
+        console.log('No existing user session found')
+        this.currentUser = null
+        this.isAuthenticated = false
+        this.updateUI()
+      }
+      
+      // Listen for auth state changes
+      supabase.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id)
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          this.currentUser = session.user
+          this.isAuthenticated = true
+          this.updateUI()
+        } else if (event === 'SIGNED_OUT') {
+          this.currentUser = null
+          this.isAuthenticated = false
+          this.updateUI()
+        }
+      })
+      
+    } catch (error) {
+      console.error('Error initializing auth manager:', error)
+      this.currentUser = null
+      this.isAuthenticated = false
       this.updateUI()
     }
   }

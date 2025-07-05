@@ -336,6 +336,26 @@
       updateLogsDisplay();
     }
 
+    window.clearBrowserData = function() {
+      try {
+        // Clear localStorage
+        localStorage.clear();
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        
+        // Clear Supabase session
+        supabase.auth.signOut();
+        
+        addLog('Browser data cleared (localStorage, sessionStorage, auth session)', 'info');
+        document.getElementById('loginOutput').innerHTML = '<span class="success">Browser data cleared. Try testing in an incognito window for best results.</span>';
+        
+      } catch (error) {
+        addLog(`Error clearing browser data: ${error.message}`, 'error');
+        document.getElementById('loginOutput').innerHTML = `<span class="error">Error clearing data: ${error.message}</span>`;
+      }
+    }
+
     // Initialize
     addLog('Debug tool initialized');
   </script>

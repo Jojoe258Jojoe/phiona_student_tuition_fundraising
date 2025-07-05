@@ -107,11 +107,26 @@ export const authService = {
   // Get current user
   async getCurrentUser() {
     try {
+      // Get the current session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError)
+        throw sessionError
+      }
+      
+      if (!session?.user) {
+        return { success: true, user: null }
+      }
+      
+      // Verify the user is still valid
       const { data: { user }, error } = await supabase.auth.getUser()
       if (error) throw error
+      
       return { success: true, user }
     } catch (error) {
-      return { success: false, error: error.message }
+      console.error('Get current user error:', error)
+      return { success: false, error: error.message, user: null }
     }
   },
 
