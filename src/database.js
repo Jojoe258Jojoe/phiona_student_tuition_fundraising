@@ -353,6 +353,17 @@ export const competitionService = {
   // Join competition
   async joinCompetition(userId, competitionId) {
     try {
+      // Test connection first
+      const connectionTest = await testSupabaseConnection()
+      if (!connectionTest.success) {
+        return { 
+          success: false, 
+          error: connectionTest.isNetworkError 
+            ? 'Unable to connect to the database. Please check your internet connection.'
+            : `Database connection failed: ${connectionTest.error}`
+        }
+      }
+      
       const { data, error } = await supabase
         .from('competition_participants')
         .insert([{
@@ -365,6 +376,12 @@ export const competitionService = {
       if (error) throw error
       return { success: true, data }
     } catch (error) {
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        return { 
+          success: false, 
+          error: 'Network connection failed. Please check your internet connection and try again.'
+        }
+      }
       return { success: false, error: error.message }
     }
   }
