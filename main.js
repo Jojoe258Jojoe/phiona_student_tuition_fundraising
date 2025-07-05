@@ -65,7 +65,6 @@ window.showForgotPassword = () => {
 
 window.authManager = authManager
 window.hackathonRegistrationManager = hackathonRegistrationManager
-window.loadCompetitions = loadCompetitions
 
 async function loadCompetitions() {
   const result = await competitionService.getCompetitions()

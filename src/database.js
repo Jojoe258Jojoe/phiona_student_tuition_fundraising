@@ -13,46 +13,7 @@ if (!supabaseUrl || !supabaseKey) {
 console.log('Supabase URL:', supabaseUrl)
 console.log('Supabase Key configured:', supabaseKey ? 'Yes' : 'No')
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'hackathon-platform'
-    }
-  }
-})
-
-// Test Supabase connection
-async function testSupabaseConnection() {
-  try {
-    console.log('Testing Supabase connection...')
-    
-    // Simple health check
-    const { data, error } = await supabase
-      .from('competitions')
-      .select('count')
-      .limit(1)
-    
-    if (error) {
-      console.error('Supabase connection test failed:', error)
-      return { success: false, error: error.message }
-    }
-    
-    console.log('Supabase connection successful')
-    return { success: true }
-  } catch (error) {
-    console.error('Network error during Supabase connection test:', error)
-    return { 
-      success: false, 
-      error: `Network connection failed: ${error.message}`,
-      isNetworkError: true
-    }
-  }
-}
+export const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Auth functions
 export const authService = {
@@ -353,17 +314,6 @@ export const competitionService = {
   // Join competition
   async joinCompetition(userId, competitionId) {
     try {
-      // Test connection first
-      const connectionTest = await testSupabaseConnection()
-      if (!connectionTest.success) {
-        return { 
-          success: false, 
-          error: connectionTest.isNetworkError 
-            ? 'Unable to connect to the database. Please check your internet connection.'
-            : `Database connection failed: ${connectionTest.error}`
-        }
-      }
-      
       const { data, error } = await supabase
         .from('competition_participants')
         .insert([{
@@ -376,12 +326,6 @@ export const competitionService = {
       if (error) throw error
       return { success: true, data }
     } catch (error) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        return { 
-          success: false, 
-          error: 'Network connection failed. Please check your internet connection and try again.'
-        }
-      }
       return { success: false, error: error.message }
     }
   }
