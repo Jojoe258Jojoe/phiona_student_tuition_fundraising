@@ -298,6 +298,244 @@ body {
   outline: none;
   border-color: var(--electric-green);
   box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.form-group input.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.form-group input.success {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.2);
+}
+
+.form-input {
+  padding: 0.75rem;
+  background: var(--light-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--electric-green);
+  box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.form-input.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.form-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.field-error {
+  display: none;
+  color: var(--error-color);
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.field-help {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  opacity: 0.8;
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: var(--electric-green);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-icon {
+  font-size: 1rem;
+}
+
+.password-strength {
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.strength-meter {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+
+.strength-bar {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.strength-bar.strength-0 {
+  width: 0%;
+  background: var(--error-color);
+}
+
+.strength-bar.strength-1 {
+  width: 20%;
+  background: var(--error-color);
+}
+
+.strength-bar.strength-2 {
+  width: 40%;
+  background: var(--warning-color);
+}
+
+.strength-bar.strength-3 {
+  width: 60%;
+  background: var(--warning-color);
+}
+
+.strength-bar.strength-4 {
+  width: 80%;
+  background: var(--success-color);
+}
+
+.strength-bar.strength-5 {
+  width: 100%;
+  background: var(--success-color);
+}
+
+.strength-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.password-match {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  display: none;
+}
+
+.password-match.success {
+  color: var(--success-color);
+}
+
+.password-match.error {
+  color: var(--error-color);
+}
+
+.match-success,
+.match-error {
+  font-weight: 500;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+.checkbox-container input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkbox-container input[type="checkbox"]:checked + .checkmark {
+  background: var(--electric-green);
+  border-color: var(--electric-green);
+}
+
+.checkbox-container input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  color: var(--dark-bg);
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.checkbox-container:hover .checkmark {
+  border-color: var(--electric-green);
+}
+
+.checkbox-container a {
+  color: var(--electric-green);
+  text-decoration: none;
+}
+
+.checkbox-container a:hover {
+  text-decoration: underline;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+}
+
+.btn-loading {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 .forgot-password,
@@ -1369,6 +1607,10 @@ body {
 
   .auth-buttons .btn {
     width: 100%;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
   }
 
   .story-card {
