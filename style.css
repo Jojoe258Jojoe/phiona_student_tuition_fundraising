@@ -1597,29 +1597,37 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .nav-menu {
-    position: fixed;
-    left: -100%;
-    top: 70px;
-    flex-direction: column;
-    background: var(--dark-bg);
-    width: 100%;
-    text-align: center;
-    transition: 0.3s;
-    box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
-    padding: 2rem 0;
+  .dropdown-menu {
+    right: -10px;
+    left: -10px;
+    min-width: auto;
+    width: calc(100vw - 40px);
+    max-width: 300px;
   }
 
-  .nav-menu.active {
-    left: 0;
+  .dropdown-toggle {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
   }
 
-  .nav-menu li {
-    margin: 1rem 0;
+  .dropdown-text {
+    display: none;
   }
 
-  .nav-toggle {
-    display: flex;
+  .dropdown-icon .bar {
+    width: 16px;
+  }
+
+  .dropdown-link {
+    padding: 0.8rem 1rem;
+  }
+
+  .link-icon {
+    font-size: 1rem;
+  }
+
+  .link-text {
+    font-size: 0.9rem;
   }
 
   .hero {
