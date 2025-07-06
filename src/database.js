@@ -9,11 +9,36 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Supabase configuration is incomplete. Please check your .env file.')
 }
 
+// Validate URL format
+try {
+  new URL(supabaseUrl)
+} catch (urlError) {
+  console.error('Invalid Supabase URL format:', supabaseUrl)
+  throw new Error('Invalid Supabase URL configuration. Please check your .env file.')
+}
+
+// Validate that the URL is a Supabase URL
+if (!supabaseUrl.includes('supabase.co')) {
+  console.warn('Supabase URL does not appear to be a valid Supabase domain')
+}
+
 // Log configuration for debugging (without exposing the full key)
 console.log('Supabase URL:', supabaseUrl)
 console.log('Supabase Key configured:', supabaseKey ? 'Yes' : 'No')
+console.log('Supabase Key length:', supabaseKey ? supabaseKey.length : 0)
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'hackathon-platform'
+    }
+  }
+})
 
 // Auth functions
 export const authService = {
@@ -140,12 +165,34 @@ export const authService = {
   // Get current user
   async getCurrentUser() {
     try {
+      // First check if we can reach Supabase
+      try {
+        const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+          method: 'HEAD',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          }
+        })
+        
+        if (!response.ok && response.status !== 404) {
+          throw new Error(`Supabase connection failed: ${response.status} ${response.statusText}`)
+        }
+      } catch (fetchError) {
+        console.error('Supabase connectivity check failed:', fetchError)
+        throw new Error('Unable to connect to Supabase. Please check your internet connection and try again.')
+      }
+
       // Get the current session first
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
       if (sessionError) {
         console.error('Session error:', sessionError)
-        throw sessionError
+        // Handle specific session errors
+        if (sessionError.message.includes('Failed to fetch')) {
+          throw new Error('Network connection failed. Please check your internet connection.')
+        }
+        throw new Error(`Session error: ${sessionError.message}`)
       }
       
       if (!session?.user) {
@@ -154,12 +201,27 @@ export const authService = {
       
       // Verify the user is still valid
       const { data: { user }, error } = await supabase.auth.getUser()
-      if (error) throw error
+      if (error) {
+        console.error('Get user error:', error)
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Network connection failed. Please check your internet connection.')
+        }
+        throw new Error(`Authentication error: ${error.message}`)
+      }
       
       return { success: true, user }
     } catch (error) {
       console.error('Get current user error:', error)
-      return { success: false, error: error.message, user: null }
+      
+      // Provide more specific error messages
+      let errorMessage = error.message
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        errorMessage = 'Unable to connect to the authentication service. Please check your internet connection and try again.'
+      } else if (error.message.includes('Invalid API key')) {
+        errorMessage = 'Authentication configuration error. Please contact support.'
+      }
+      
+      return { success: false, error: errorMessage, user: null }
     }
   },
 
